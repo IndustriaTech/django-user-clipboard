@@ -1,0 +1,18 @@
+<!DOCTYPE html>{% load i18n %}
+<html>
+	<head>
+	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	</head>
+	<body>
+		<form method="POST" action="{% url 'clipboard' %}" enctype="multipart/form-data">{% csrf_token %}
+			{{file_form}}
+			<button type="submit">Submit</button>
+		</form>
+
+		Image Form:
+		<form method="POST" action="{% url 'clipboard_images' %}" enctype="multipart/form-data">{% csrf_token %}
+			{{image_form}}
+			<button type="submit">Submit</button>
+		</form>
+	</body>
+</html>
