@@ -1,4 +1,5 @@
 *.pyc
 *.sublime-*
 /media*
+/example/example/media*
 *.sqlite3
