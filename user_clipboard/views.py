@@ -72,6 +72,7 @@ class ClipboardFileAPIView(View):
                 'data': {
                     'name': instance.filename,
                     'url': instance.file.url,
+                    'id': instance.pk,
                 }
             }
 
