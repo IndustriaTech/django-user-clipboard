@@ -225,7 +225,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'name': clipboard_image.filename,
                 'thumbnail': clipboard_image.thumbnail,
                 'id': clipboard_image.pk
-            },{
+            }, {
                 'url': clipboard_image2.file.url,
                 'name': clipboard_image2.filename,
                 'thumbnail': clipboard_image2.thumbnail,
@@ -419,10 +419,9 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         post_data['file'] = f
 
         response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 1}), post_data
+            reverse('clipboard_images', kwargs={'pk': 3}), post_data
         )
         self.assertEqual(200, response.status_code)
-
         data = json.loads(response.content)
 
         self.assertDictEqual(data, {
@@ -430,6 +429,20 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'file': ['Upload a valid image. The file you uploaded was either not an image or a corrupted image.']
             }
         })
+
+    def test_404_image_clipboard_edit_file(self):
+        self.client.login(username="user1", password=1234)
+        file_path = os.path.abspath('../user_clipboard/test_file.txt')
+
+        f = open(file_path, 'r')
+        post_data = {}
+
+        post_data['file'] = f
+
+        response = self.client.post(
+            reverse('clipboard_images', kwargs={'pk': 1}), post_data
+        )
+        self.assertEqual(404, response.status_code)
 
     def test_image_clipboard_edit_image(self):
         self.client.login(username="user1", password=1234)
