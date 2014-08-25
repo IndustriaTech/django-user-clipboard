@@ -81,7 +81,6 @@ class ClipboardTestMixin(object):
                 print e
 
 
-
 class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_user1_not_authenticated_get(self):
@@ -107,7 +106,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         self.assertEqual(403, response.status_code)
 
-
     def test_user1_not_authenticated_post(self):
         response = self.client.post(
             reverse('clipboard')
@@ -130,7 +128,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(403, response.status_code)
-
 
     def test_user1_not_authenticated_delete(self):
         response = self.client.delete(
@@ -468,3 +465,57 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 os.remove(settings.PROJECT_DIR + url_path_thumbnail)
             except OSError as e:
                 print e
+
+    def test_delete_file_without_pk(self):
+        self.client.login(username="user1", password=1234)
+        response = self.client.delete(
+            reverse('clipboard')
+        )
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.content)
+
+        self.assertDictEqual(data, {
+            'error': 'Need a pk for delete'
+        })
+
+    def test_delete_file_with_pk(self):
+        self.client.login(username="user1", password=1234)
+        response = self.client.delete(
+            reverse('clipboard', kwargs={'pk': 1})
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.content)
+
+        self.assertDictEqual(data, {
+            'success': True
+        })
+
+    def test_delete_image_without_pk(self):
+        self.client.login(username="user1", password=1234)
+        response = self.client.delete(
+            reverse('clipboard_images')
+        )
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.content)
+
+        self.assertDictEqual(data, {
+            'error': 'Need a pk for delete'
+        })
+
+    def test_delete_image_with_pk(self):
+        self.client.login(username="user1", password=1234)
+        response = self.client.delete(
+            reverse('clipboard_images', kwargs={'pk': 3})
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.content)
+
+        self.assertDictEqual(data, {
+            'success': True
+        })
