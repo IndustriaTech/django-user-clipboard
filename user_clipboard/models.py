@@ -1,4 +1,3 @@
-import os
 import uuid
 
 from django.db import models
@@ -10,9 +9,9 @@ from easy_thumbnails.files import get_thumbnailer
 def new_file_upload_to(instance, filename):
     """Generate file path for newly uploaded files"""
     instance.filename = filename
-    name, ext = os.path.splitext(os.path.basename(filename))
+    ext = filename.split('.')[-1]
     uid = instance.user_id
-    return "clipboard/%(uid)s/%(name)s%(ext)s" % {
+    return "clipboard/%(uid)s/%(name)s.%(ext)s" % {
         'uid': uid,
         'name': uuid.uuid4(),
         'ext': ext,
