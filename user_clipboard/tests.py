@@ -82,6 +82,7 @@ class ClipboardTestMixin(object):
 
 
 class ClipboardTestApi(ClipboardTestMixin, TestCase):
+    maxDiff = None
 
     def test_user1_not_authenticated_get(self):
         response = self.client.get(

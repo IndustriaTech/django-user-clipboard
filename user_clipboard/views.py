@@ -1,9 +1,8 @@
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.views.generic import View
-
+from django.views.generic.detail import SingleObjectMixin
 from .utils.ajax import JSONResponse
 from .models import Clipboard
-from .forms import ClipboardFileForm, ClipboardImageForm
 
 
 def file_as_dict(instance):
@@ -19,62 +18,44 @@ def file_as_dict(instance):
         return data
 
 
-class ClipboardFileAPIView(View):
+class ClipboardFileAPIView(SingleObjectMixin, View):
+    model = Clipboard
 
-    def get(self, request, pk=None):
+    def get_queryset(self):
+        pk = self.kwargs['pk'] if 'pk' in self.kwargs else None
+        if pk:
+            return super(ClipboardFileAPIView, self).get_queryset().filter(user=self.request.user, pk=pk)
+        else:
+            return super(ClipboardFileAPIView, self).get_queryset().filter(user=self.request.user)
+
+    def get(self, request, form_class=None, pk=None):
         if not request.user.is_authenticated():
             raise PermissionDenied
 
-        if pk:
-            try:
-                user_clipboard = Clipboard.objects.filter(user=request.user, pk=pk)
-            except ObjectDoesNotExist:
-                user_clipboard = None
-
-        else:
-            try:
-                user_clipboard = Clipboard.objects.filter(user=request.user)
-            except ObjectDoesNotExist:
-                user_clipboard = None
+        try:
+            user_clipboard = self.get_queryset()
+        except ObjectDoesNotExist:
+            user_clipboard = None
 
         if user_clipboard:
             data = {
                 'data': [file_as_dict(instance) for instance in user_clipboard.iterator()]
             }
-
             return JSONResponse(request, data)
 
         return JSONResponse(request, {})
 
-    def post(self, request, pk=None):
+    def post(self, request, form_class=None, pk=None):
         if not request.user.is_authenticated():
             raise PermissionDenied
 
         data = (request.POST, request.FILES)
-        form = ClipboardFileForm(*data)
+        instance = Clipboard.objects.get(user=request.user, pk=pk) if pk is not None else None
+        form = form_class(*data, instance=instance)
 
         if form.is_valid():
-            try:
-                instance = Clipboard.objects.get(user=request.user, pk=pk)
-            except ObjectDoesNotExist:
-                instance = None
-
-            if instance:
-                instance.file = request.FILES['file']
-                instance.save()
-
-            else:
-                instance = form.save(commit=False)
-                instance.user = request.user
-                instance.save()
-
-            data = {
-                'data': {
-                    'name': instance.filename,
-                    'url': instance.file.url,
-                    'id': instance.pk,
-                }
-            }
+            form.instance.user = request.user
+            instance = form.save()
 
             try:
                 thumb = instance.get_thumbnail_url()
@@ -84,14 +65,15 @@ class ClipboardFileAPIView(View):
             instance.thumbnail = thumb
             instance.save(update_fields=['thumbnail'])
 
-            if instance.thumbnail:
-                data['data']['thumbnail'] = instance.thumbnail
+            data = {
+                'data': file_as_dict(instance)
+            }
 
             return JSONResponse(request, data)
 
         return JSONResponse(request, {'errors': form.errors})
 
-    def delete(self, request, pk=None):
+    def delete(self, request, form_class=None, pk=None):
         if not request.user.is_authenticated():
             raise PermissionDenied
 
@@ -102,76 +84,8 @@ class ClipboardFileAPIView(View):
             return JSONResponse(request, {'error': "Need a pk for delete"})
 
 
-class ClipboardImageAPIView(View):
+class ClipboardImageAPIView(ClipboardFileAPIView):
 
-    def get(self, request, pk=None):
-        if not request.user.is_authenticated():
-            raise PermissionDenied
-
-        if pk:
-            try:
-                user_clipboard = Clipboard.objects.filter(user=request.user, pk=pk)
-            except ObjectDoesNotExist:
-                user_clipboard = None
-
-        else:
-            try:
-                user_clipboard = Clipboard.objects.filter(user=request.user).exclude(thumbnail__isnull=True)
-            except ObjectDoesNotExist:
-                user_clipboard = None
-
-        if user_clipboard:
-            data = {
-                'data': [file_as_dict(instance) for instance in user_clipboard.iterator()]
-            }
-
-            return JSONResponse(request, data)
-
-        return JSONResponse(request, {})
-
-    def post(self, request, pk=None):
-        if not request.user.is_authenticated():
-            raise PermissionDenied
-
-        data = (request.POST, request.FILES)
-        form = ClipboardImageForm(*data)
-
-        if form.is_valid():
-            try:
-                instance = Clipboard.objects.get(user=request.user, pk=pk)
-            except ObjectDoesNotExist:
-                instance = None
-
-            if instance:
-                instance.file = request.FILES['file']
-                instance.save()
-
-            else:
-                instance = form.save(commit=False)
-                instance.user = request.user
-                instance.save()
-
-            instance.thumbnail = instance.get_thumbnail_url()
-            instance.save(update_fields=['thumbnail'])
-
-            data = {
-                'data': {
-                    'name': instance.filename,
-                    'id': instance.pk,
-                    'thumbnail': instance.thumbnail,
-                    'url': instance.file.url,
-                }
-            }
-
-            return JSONResponse(request, data)
-
-        return JSONResponse(request, {'errors': form.errors})
-
-    def delete(self, request, pk=None):
-            if not request.user.is_authenticated():
-                raise PermissionDenied
-            if pk:
-                Clipboard.objects.get(user=request.user, pk=pk).delete()
-                return JSONResponse(request, {'success': True})
-            else:
-                return JSONResponse(request, {'error': "Need a pk for delete"})
+    def get_queryset(self):
+        qs = super(ClipboardImageAPIView, self).get_queryset()
+        return qs.filter(user=self.request.user).exclude(thumbnail__isnull=True)
