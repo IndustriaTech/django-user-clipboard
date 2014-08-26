@@ -180,11 +180,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         data = json.loads(response.content)
         self.assertDictEqual(data, {
-            'data': [{
+            'data': {
                 'url': clipboard_file.file.url,
                 'name': clipboard_file.filename,
                 'id': clipboard_file.pk
-            }]
+            }
         })
 
     def test_user1_get_clipboard_images(self):
@@ -225,12 +225,12 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         data = json.loads(response.content)
         self.assertDictEqual(data, {
-            'data': [{
+            'data': {
                 'url': clipboard_image.file.url,
                 'name': clipboard_image.filename,
                 'thumbnail': clipboard_image.get_thumbnail_url(),
                 'id': clipboard_image.pk
-            }]
+            }
         })
 
     def test_file_clipboard_create_non_image_file(self):
@@ -453,8 +453,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             except OSError as e:
                 print e
 
-    def test_delete_file_without_pk(self):
+    def test_clear_clipboard(self):
         self.client.login(username="user1", password=1234)
+        self.assertTrue(Clipboard.objects.filter(user__username='user1').exists())
+
         response = self.client.delete(
             reverse('clipboard')
         )
@@ -463,8 +465,9 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         data = json.loads(response.content)
 
         self.assertDictEqual(data, {
-            'error': 'Generic detail view ClipboardFileAPIView must be called with either an object pk or a slug.'
+            'success': True
         })
+        self.assertFalse(Clipboard.objects.filter(user__username='user1').exists())
 
     def test_delete_file_with_pk(self):
         self.client.login(username="user1", password=1234)
@@ -482,15 +485,16 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_delete_image_without_pk(self):
         self.client.login(username="user1", password=1234)
+        self.assertTrue(Clipboard.objects.filter(user__username='user1', is_image=True).exists())
         response = self.client.delete(
             reverse('clipboard_images')
         )
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-
         self.assertDictEqual(data, {
-            'error': 'Generic detail view ClipboardImageAPIView must be called with either an object pk or a slug.'
+            'success': True
         })
+        self.assertFalse(Clipboard.objects.filter(user__username='user1', is_image=True).exists())
 
     def test_delete_image_with_pk(self):
         self.client.login(username="user1", password=1234)
@@ -516,13 +520,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard_images', kwargs={'pk': 3})
         )
 
-        self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-
-        self.assertDictEqual(data, {
-            'error': 'No clipboard found matching the query'
-        })
+        self.assertEqual(404, response.status_code)
 
     def test_delete_404_file_with_pk(self):
         self.client.login(username="user1", password=1234)
@@ -534,10 +532,4 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard_images', kwargs={'pk': 1})
         )
 
-        self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-
-        self.assertDictEqual(data, {
-            'error': 'No clipboard found matching the query'
-        })
+        self.assertEqual(404, response.status_code)
