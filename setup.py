@@ -2,7 +2,6 @@ from setuptools import setup
 import os
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
-os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-user-clipboard',
@@ -13,15 +12,16 @@ setup(
     author_email='vladimirrussinov@gmail.com',
     long_description=README,
     install_requires=[
-        'easy-thumbnails>=2.1'
+        'django-imagekit'
     ],
     packages=[
         'user_clipboard',
         'user_clipboard.migrations',
         'user_clipboard.utils',
-        'user_clipboard.tests_files'
     ],
-    package_data={'': ['license.txt']},
+    package_data={'': ['license.txt'],
+                  'tests_file': ['tests_files/*']
+    },
     include_package_data=True,
     keywords=['Clipboard', 'Clipboard API', 'File Clipboard', 'Image Clipboard'],
     classifiers=[
