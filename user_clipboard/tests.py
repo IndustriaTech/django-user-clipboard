@@ -1,4 +1,6 @@
 import os
+import shutil
+
 import json
 
 from django.conf import settings
@@ -19,8 +21,8 @@ class ClipboardTestMixin(object):
         self.user1.set_password('1234')
         self.user1.save()
 
-        self.file_path_test = os.path.abspath('../user_clipboard/test_file.txt')
-        self.image_path_test = os.path.abspath('../user_clipboard/test_image.jpg')
+        self.file_path_test = os.path.abspath('../user_clipboard/tests_files/test_file.txt')
+        self.image_path_test = os.path.abspath('../user_clipboard/tests_files/test_image.jpg')
 
         with open(self.file_path_test, 'r') as self.file_test:
             self.fake_clipboard_file = Clipboard.objects.create(user=self.user1, file=DJ(self.file_test, 'test_file.txt'))
@@ -40,9 +42,9 @@ class ClipboardTestMixin(object):
         url_file_path = self.fake_clipboard_file.file.url
         url_file_path2 = self.fake_clipboard_file2.file.url
         url_image_path = self.fake_clipboard_image.file.url
-        url_thumbnail_path = self.fake_clipboard_image.thumbnail
+        url_thumbnail_path = self.fake_clipboard_image.image_thumbnail.path
         url_image_path2 = self.fake_clipboard_image2.file.url
-        url_thumbnail_path2 = self.fake_clipboard_image2.thumbnail
+        url_thumbnail_path2 = self.fake_clipboard_image2.image_thumbnail.path
 
         if os.path.exists(settings.PROJECT_DIR + url_file_path):
             try:
@@ -54,9 +56,11 @@ class ClipboardTestMixin(object):
         if os.path.exists(settings.PROJECT_DIR + url_image_path):
             try:
                 os.remove(settings.PROJECT_DIR + url_image_path)
-                os.remove(settings.PROJECT_DIR + url_thumbnail_path)
+                shutil.rmtree(os.path.abspath(os.path.join(url_thumbnail_path, os.pardir)))
+
                 os.remove(settings.PROJECT_DIR + url_image_path2)
-                os.remove(settings.PROJECT_DIR + url_thumbnail_path2)
+                shutil.rmtree(os.path.abspath(os.path.join(url_thumbnail_path2, os.pardir)))
+
             except OSError as e:
                 print e
 
@@ -235,7 +239,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_file_clipboard_create_non_image_file(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_file.txt')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_file.txt')
         with open(file_path, 'r') as f:
             post_data = {}
             post_data['file'] = f
@@ -264,7 +268,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_file_clipboard_create_image_file(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_image.jpg')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_image.jpg')
 
         post_data = {}
         with open(file_path, 'r') as f:
@@ -292,13 +296,14 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         if os.path.exists(settings.PROJECT_DIR + url_path):
             try:
                 os.remove(settings.PROJECT_DIR + url_path)
-                os.remove(settings.PROJECT_DIR + url_path_thumbnail)
+                shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
+                # os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir))
             except OSError as e:
                 print e
 
     def test_image_clipboard_create_non_image_file(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_file.txt')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_file.txt')
         with open(file_path, 'r') as f:
             post_data = {}
             post_data['file'] = f
@@ -318,7 +323,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_image_clipboard_create_image_file(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_image.jpg')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_image.jpg')
 
         with open(file_path, 'r') as f:
             post_data = {}
@@ -346,13 +351,13 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         if os.path.exists(settings.PROJECT_DIR + url_path):
             try:
                 os.remove(settings.PROJECT_DIR + url_path)
-                os.remove(settings.PROJECT_DIR + url_path_thumbnail)
+                shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
             except OSError as e:
                 print e
 
     def test_file_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_image_edit.jpg')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_image_edit.jpg')
 
         with open(file_path, 'r') as f:
             post_data = {}
@@ -381,13 +386,13 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         if os.path.exists(settings.PROJECT_DIR + url_path):
             try:
                 os.remove(settings.PROJECT_DIR + url_path)
-                os.remove(settings.PROJECT_DIR + url_path_thumbnail)
+                shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
             except OSError as e:
                 print e
 
     def test_image_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_file.txt')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_file.txt')
 
         with open(file_path, 'r') as f:
             post_data = {}
@@ -407,7 +412,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_404_image_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_file.txt')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_file.txt')
 
         with open(file_path, 'r') as f:
             post_data = {}
@@ -420,7 +425,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_image_clipboard_edit_image(self):
         self.client.login(username="user1", password=1234)
-        file_path = os.path.abspath('../user_clipboard/test_image_edit.jpg')
+        file_path = os.path.abspath('../user_clipboard/tests_files/test_image_edit.jpg')
 
         with open(file_path, 'r') as f:
             post_data = {}
@@ -448,7 +453,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         if os.path.exists(settings.PROJECT_DIR + url_path):
             try:
                 os.remove(settings.PROJECT_DIR + url_path)
-                os.remove(settings.PROJECT_DIR + url_path_thumbnail)
+                shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
             except OSError as e:
                 print e
 
