@@ -24,19 +24,15 @@ class ClipboardTestMixin(object):
         self.file_path_test = os.path.abspath('../user_clipboard/tests_files/test_file.txt')
         self.image_path_test = os.path.abspath('../user_clipboard/tests_files/test_image.jpg')
 
-        with open(self.file_path_test, 'r') as self.file_test:
-            self.fake_clipboard_file = Clipboard.objects.create(user=self.user1, file=DJ(self.file_test, 'test_file.txt'))
-            self.fake_clipboard_file.save()
-            self.fake_clipboard_file2 = Clipboard.objects.create(user=self.user1, file=DJ(self.file_test, 'test_file2.txt'))
-            self.fake_clipboard_file2.save()
+        with open(self.file_path_test, 'r') as test_file:
+            self.fake_clipboard_file = Clipboard.objects.create(user=self.user1, file=DJ(test_file, 'test_file.txt'))
+            test_file.seek(0)
+            self.fake_clipboard_file2 = Clipboard.objects.create(user=self.user1, file=DJ(test_file, 'test_file2.txt'))
 
-        with open(self.image_path_test, 'r') as self.image_test:
-            self.fake_clipboard_image = Clipboard.objects.create(user=self.user1, file=DJ(self.image_test, 'test_image.jpg'))
-            self.fake_clipboard_image.thumbnail = self.fake_clipboard_image.get_thumbnail_url()
-            self.fake_clipboard_image.save()
-            self.fake_clipboard_image2 = Clipboard.objects.create(user=self.user1, file=DJ(self.image_test, 'test_image2.jpg'))
-            self.fake_clipboard_image2.thumbnail = self.fake_clipboard_image2.get_thumbnail_url()
-            self.fake_clipboard_image2.save()
+        with open(self.image_path_test, 'r') as test_image:
+            self.fake_clipboard_image = Clipboard.objects.create(user=self.user1, file=DJ(test_image, 'test_image.jpg'))
+            test_image.seek(0)
+            self.fake_clipboard_image2 = Clipboard.objects.create(user=self.user1, file=DJ(test_image, 'test_image2.jpg'))
 
     def tearDown(self):
         url_file_path = self.fake_clipboard_file.file.url
@@ -162,12 +158,12 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             }, {
                 'url': clipboard_image.file.url,
                 'id': clipboard_image.pk,
-                'thumbnail': clipboard_image.thumbnail,
+                'thumbnail': clipboard_image.get_thumbnail_url(),
                 'name': clipboard_image.filename,
             }, {
                 'url': clipboard_image2.file.url,
                 'id': clipboard_image2.pk,
-                'thumbnail': clipboard_image2.thumbnail,
+                'thumbnail': clipboard_image2.get_thumbnail_url(),
                 'name': clipboard_image2.filename,
             }]
         })
@@ -207,12 +203,12 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             'data': [{
                 'url': clipboard_image.file.url,
                 'name': clipboard_image.filename,
-                'thumbnail': clipboard_image.thumbnail,
+                'thumbnail': clipboard_image.get_thumbnail_url(),
                 'id': clipboard_image.pk
             }, {
                 'url': clipboard_image2.file.url,
                 'name': clipboard_image2.filename,
-                'thumbnail': clipboard_image2.thumbnail,
+                'thumbnail': clipboard_image2.get_thumbnail_url(),
                 'id': clipboard_image2.pk
             }]
         })
@@ -232,7 +228,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             'data': [{
                 'url': clipboard_image.file.url,
                 'name': clipboard_image.filename,
-                'thumbnail': clipboard_image.thumbnail,
+                'thumbnail': clipboard_image.get_thumbnail_url(),
                 'id': clipboard_image.pk
             }]
         })
@@ -289,7 +285,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'url': clipboard_file.file.url,
                 'name': clipboard_file.filename,
                 'id': clipboard_file.pk,
-                'thumbnail': clipboard_file.thumbnail,
+                'thumbnail': clipboard_file.get_thumbnail_url(),
             }
         })
 
@@ -344,7 +340,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'url': clipboard_file.file.url,
                 'name': clipboard_file.filename,
                 'id': clipboard_file.pk,
-                'thumbnail': clipboard_file.thumbnail,
+                'thumbnail': clipboard_file.get_thumbnail_url(),
             }
         })
 
@@ -378,7 +374,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             'data': {
                 'url': file_for_edit.file.url,
                 'id': file_for_edit.pk,
-                'thumbnail': file_for_edit.thumbnail,
+                'thumbnail': file_for_edit.get_thumbnail_url(),
                 'name': file_for_edit.filename
             }
         })
@@ -445,7 +441,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             'data': {
                 'url': image_for_edit.file.url,
                 'id': image_for_edit.pk,
-                'thumbnail': image_for_edit.thumbnail,
+                'thumbnail': image_for_edit.get_thumbnail_url(),
                 'name': image_for_edit.filename,
             }
         })

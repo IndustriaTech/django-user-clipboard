@@ -8,13 +8,13 @@ from .forms import ClipboardFileForm, ClipboardImageForm
 
 def file_as_dict(instance):
         data = {
-            'name': instance.filename,
             'id': instance.pk,
+            'name': instance.filename,
             'url': instance.file.url,
         }
 
-        if instance.thumbnail:
-            data['thumbnail'] = instance.thumbnail
+        if instance.is_image:
+            data['thumbnail'] = instance.get_thumbnail_url()
 
         return data
 
@@ -58,14 +58,6 @@ class ClipboardFileAPIView(SingleObjectMixin, View):
             form.instance.user = request.user
             instance = form.save()
 
-            try:
-                thumb = instance.get_thumbnail_url()
-            except:
-                thumb = None
-
-            instance.thumbnail = thumb
-            instance.save(update_fields=['thumbnail'])
-
             data = {
                 'data': file_as_dict(instance)
             }
@@ -90,4 +82,4 @@ class ClipboardImageAPIView(ClipboardFileAPIView):
 
     def get_queryset(self):
         qs = super(ClipboardImageAPIView, self).get_queryset()
-        return qs.filter(user=self.request.user).exclude(thumbnail__isnull=True)
+        return qs.filter(is_image=True)
