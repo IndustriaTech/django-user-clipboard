@@ -1,9 +1,10 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
-
-from easy_thumbnails.files import get_thumbnailer
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill
 
 
 def new_file_upload_to(instance, filename):
@@ -21,6 +22,11 @@ def new_file_upload_to(instance, filename):
 class Clipboard(models.Model):
     user = models.ForeignKey(User)
     file = models.FileField(upload_to=new_file_upload_to, max_length=255)
+    image_thumbnail = ImageSpecField(source='file',
+                                     processors=[ResizeToFill(settings.CLIPBOARD_IMAGE_WIDTH, settings.CLIPBOARD_IMAGE_HEIGHT)],
+                                     format='JPEG',
+                                     options={'quality': settings.CLIPBOARD_THUMBNAIL_QUALITY})
+
     filename = models.CharField(max_length=128, null=True, blank=True)
     thumbnail = models.CharField(max_length=255, null=True, blank=True)
 
@@ -29,7 +35,4 @@ class Clipboard(models.Model):
 
     def get_thumbnail_url(self):
         if self.file:
-            thumbnailer = get_thumbnailer(self.file)
-            thumbnail_options = {'size': (100, 100), 'crop': True}
-            img_thumb = thumbnailer.get_thumbnail(thumbnail_options)
-            return img_thumb.url
+            return self.image_thumbnail.url

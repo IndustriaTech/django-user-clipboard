@@ -40,7 +40,7 @@ INSTALLED_APPS = (
 
     'example',
     'south',
-    'easy_thumbnails',
+    'imagekit',
     'user_clipboard',
 )
 
@@ -89,3 +89,7 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(PROJECT_DIR, "media/")
 MEDIA_URL = "/media/"
+
+CLIPBOARD_IMAGE_WIDTH = 100
+CLIPBOARD_IMAGE_HEIGHT = 100
+CLIPBOARD_THUMBNAIL_QUALITY = 100
