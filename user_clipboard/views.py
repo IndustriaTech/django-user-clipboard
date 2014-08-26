@@ -1,9 +1,10 @@
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied
 from django.views.generic import View
 from django.views.generic.detail import SingleObjectMixin
 from .utils.ajax import JSONResponse
 from .models import Clipboard
 from .forms import ClipboardFileForm, ClipboardImageForm
+
 
 def file_as_dict(instance):
         data = {
@@ -25,7 +26,7 @@ class ClipboardFileAPIView(SingleObjectMixin, View):
     def get_queryset(self):
         return super(ClipboardFileAPIView, self).get_queryset().filter(user=self.request.user)
 
-    def get(self, request, form_class=None, pk=None):
+    def get(self, request, pk=None):
         if not request.user.is_authenticated():
             raise PermissionDenied
 
@@ -73,15 +74,15 @@ class ClipboardFileAPIView(SingleObjectMixin, View):
 
         return JSONResponse(request, {'errors': form.errors})
 
-    def delete(self, request, form_class=None, pk=None):
+    def delete(self, request, pk=None):
         if not request.user.is_authenticated():
             raise PermissionDenied
 
-        if pk:
-            Clipboard.objects.get(user=request.user, pk=pk).delete()
+        try:
+            self.get_object().delete()
             return JSONResponse(request, {'success': True})
-        else:
-            return JSONResponse(request, {'error': "Need a pk for delete"})
+        except Exception as e:
+            return JSONResponse(request, {'error': str(e)})
 
 
 class ClipboardImageAPIView(ClipboardFileAPIView):
