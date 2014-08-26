@@ -1,37 +1,18 @@
 import os
 import json
 
-from urllib import urlencode
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files import File as DJ
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.test.client import Client as DJClient
 
 from .models import Clipboard
 
 REQUEST_CONTENT = 'application/x-www-form-urlencoded'
 
 
-class Client(DJClient):
-
-    def delete(self, path, data={}, content_type=REQUEST_CONTENT,
-            follow=False, **extra):
-        """
-        Send a resource to the server using DELETE.
-        """
-        put_data = urlencode(data) if content_type.startswith(REQUEST_CONTENT) else data
-        response = super(Client, self).delete(path,
-                data=put_data, content_type=content_type, **extra)
-        if follow:
-            response = self._handle_redirects(response, **extra)
-        return response
-
-
 class ClipboardTestMixin(object):
-    client_class = Client
 
     def setUp(self):
         self.user1 = User.objects.create(username="user1", email='test@test.com')
@@ -41,20 +22,19 @@ class ClipboardTestMixin(object):
         self.file_path_test = os.path.abspath('../user_clipboard/test_file.txt')
         self.image_path_test = os.path.abspath('../user_clipboard/test_image.jpg')
 
-        self.file_test = open(self.file_path_test, 'r')
-        self.image_test = open(self.image_path_test, 'r')
+        with open(self.file_path_test, 'r') as self.file_test:
+            self.fake_clipboard_file = Clipboard.objects.create(user=self.user1, file=DJ(self.file_test, 'test_file.txt'))
+            self.fake_clipboard_file.save()
+            self.fake_clipboard_file2 = Clipboard.objects.create(user=self.user1, file=DJ(self.file_test, 'test_file2.txt'))
+            self.fake_clipboard_file2.save()
 
-        self.fake_clipboard_file = Clipboard.objects.create(user=self.user1, file=DJ(self.file_test, 'test_file.txt'))
-        self.fake_clipboard_file.save()
-        self.fake_clipboard_file2 = Clipboard.objects.create(user=self.user1, file=DJ(self.file_test, 'test_file2.txt'))
-        self.fake_clipboard_file2.save()
-
-        self.fake_clipboard_image = Clipboard.objects.create(user=self.user1, file=DJ(self.image_test, 'test_image.jpg'))
-        self.fake_clipboard_image.thumbnail = self.fake_clipboard_image.get_thumbnail_url()
-        self.fake_clipboard_image.save()
-        self.fake_clipboard_image2 = Clipboard.objects.create(user=self.user1, file=DJ(self.image_test, 'test_image2.jpg'))
-        self.fake_clipboard_image2.thumbnail = self.fake_clipboard_image2.get_thumbnail_url()
-        self.fake_clipboard_image2.save()
+        with open(self.image_path_test, 'r') as self.image_test:
+            self.fake_clipboard_image = Clipboard.objects.create(user=self.user1, file=DJ(self.image_test, 'test_image.jpg'))
+            self.fake_clipboard_image.thumbnail = self.fake_clipboard_image.get_thumbnail_url()
+            self.fake_clipboard_image.save()
+            self.fake_clipboard_image2 = Clipboard.objects.create(user=self.user1, file=DJ(self.image_test, 'test_image2.jpg'))
+            self.fake_clipboard_image2.thumbnail = self.fake_clipboard_image2.get_thumbnail_url()
+            self.fake_clipboard_image2.save()
 
     def tearDown(self):
         url_file_path = self.fake_clipboard_file.file.url
@@ -256,12 +236,12 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_file_clipboard_create_non_image_file(self):
         self.client.login(username="user1", password=1234)
         file_path = os.path.abspath('../user_clipboard/test_file.txt')
-        f = open(file_path, 'r')
-        post_data = {}
-        post_data['file'] = f
-        response = self.client.post(
-            reverse('clipboard'), post_data
-        )
+        with open(file_path, 'r') as f:
+            post_data = {}
+            post_data['file'] = f
+            response = self.client.post(
+                reverse('clipboard'), post_data
+            )
 
         data = json.loads(response.content)
 
@@ -286,13 +266,12 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.client.login(username="user1", password=1234)
         file_path = os.path.abspath('../user_clipboard/test_image.jpg')
 
-        f = open(file_path, 'r')
         post_data = {}
-
-        post_data['file'] = f
-        response = self.client.post(
-            reverse('clipboard'), post_data
-        )
+        with open(file_path, 'r') as f:
+            post_data['file'] = f
+            response = self.client.post(
+                reverse('clipboard'), post_data
+            )
 
         data = json.loads(response.content)
 
@@ -318,36 +297,35 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 print e
 
     def test_image_clipboard_create_non_image_file(self):
-            self.client.login(username="user1", password=1234)
-            file_path = os.path.abspath('../user_clipboard/test_file.txt')
-            f = open(file_path, 'r')
+        self.client.login(username="user1", password=1234)
+        file_path = os.path.abspath('../user_clipboard/test_file.txt')
+        with open(file_path, 'r') as f:
             post_data = {}
             post_data['file'] = f
             response = self.client.post(
                 reverse('clipboard_images'), post_data
             )
 
-            self.assertEqual(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
-            data = json.loads(response.content)
+        data = json.loads(response.content)
 
-            self.assertDictEqual(data, {
-                'errors': {
-                    'file': ['Upload a valid image. The file you uploaded was either not an image or a corrupted image.']
-                }
-            })
+        self.assertDictEqual(data, {
+            'errors': {
+                'file': ['Upload a valid image. The file you uploaded was either not an image or a corrupted image.']
+            }
+        })
 
     def test_image_clipboard_create_image_file(self):
         self.client.login(username="user1", password=1234)
         file_path = os.path.abspath('../user_clipboard/test_image.jpg')
 
-        f = open(file_path, 'r')
-        post_data = {}
-
-        post_data['file'] = f
-        response = self.client.post(
-            reverse('clipboard_images'), post_data
-        )
+        with open(file_path, 'r') as f:
+            post_data = {}
+            post_data['file'] = f
+            response = self.client.post(
+                reverse('clipboard_images'), post_data
+            )
 
         data = json.loads(response.content)
 
@@ -376,14 +354,12 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.client.login(username="user1", password=1234)
         file_path = os.path.abspath('../user_clipboard/test_image_edit.jpg')
 
-        f = open(file_path, 'r')
-        post_data = {}
-
-        post_data['file'] = f
-
-        response = self.client.post(
-            reverse('clipboard', kwargs={'pk': 1}), post_data
-        )
+        with open(file_path, 'r') as f:
+            post_data = {}
+            post_data['file'] = f
+            response = self.client.post(
+                reverse('clipboard', kwargs={'pk': 1}), post_data
+            )
 
         self.assertEqual(200, response.status_code)
 
@@ -413,14 +389,13 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.client.login(username="user1", password=1234)
         file_path = os.path.abspath('../user_clipboard/test_file.txt')
 
-        f = open(file_path, 'r')
-        post_data = {}
+        with open(file_path, 'r') as f:
+            post_data = {}
+            post_data['file'] = f
+            response = self.client.post(
+                reverse('clipboard_images', kwargs={'pk': 3}), post_data
+            )
 
-        post_data['file'] = f
-
-        response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 3}), post_data
-        )
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
 
@@ -434,28 +409,25 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.client.login(username="user1", password=1234)
         file_path = os.path.abspath('../user_clipboard/test_file.txt')
 
-        f = open(file_path, 'r')
-        post_data = {}
+        with open(file_path, 'r') as f:
+            post_data = {}
+            post_data['file'] = f
+            response = self.client.post(
+                reverse('clipboard_images', kwargs={'pk': 1}), post_data
+            )
 
-        post_data['file'] = f
-
-        response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 1}), post_data
-        )
         self.assertEqual(404, response.status_code)
 
     def test_image_clipboard_edit_image(self):
         self.client.login(username="user1", password=1234)
         file_path = os.path.abspath('../user_clipboard/test_image_edit.jpg')
 
-        f = open(file_path, 'r')
-        post_data = {}
-
-        post_data['file'] = f
-
-        response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 3}), post_data
-        )
+        with open(file_path, 'r') as f:
+            post_data = {}
+            post_data['file'] = f
+            response = self.client.post(
+                reverse('clipboard_images', kwargs={'pk': 3}), post_data
+            )
 
         self.assertEqual(200, response.status_code)
 
@@ -490,7 +462,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         data = json.loads(response.content)
 
         self.assertDictEqual(data, {
-            'error': 'Need a pk for delete'
+            'error': 'Generic detail view ClipboardFileAPIView must be called with either an object pk or a slug.'
         })
 
     def test_delete_file_with_pk(self):
@@ -513,11 +485,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard_images')
         )
         self.assertEqual(200, response.status_code)
-
         data = json.loads(response.content)
 
         self.assertDictEqual(data, {
-            'error': 'Need a pk for delete'
+            'error': 'Generic detail view ClipboardImageAPIView must be called with either an object pk or a slug.'
         })
 
     def test_delete_image_with_pk(self):
@@ -532,4 +503,40 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         self.assertDictEqual(data, {
             'success': True
+        })
+
+    def test_delete_404_image_with_pk(self):
+        self.client.login(username="user1", password=1234)
+        response = self.client.delete(
+            reverse('clipboard_images', kwargs={'pk': 3})
+        )
+
+        response = self.client.delete(
+            reverse('clipboard_images', kwargs={'pk': 3})
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.content)
+
+        self.assertDictEqual(data, {
+            'error': 'No clipboard found matching the query'
+        })
+
+    def test_delete_404_file_with_pk(self):
+        self.client.login(username="user1", password=1234)
+        response = self.client.delete(
+            reverse('clipboard_images', kwargs={'pk': 1})
+        )
+
+        response = self.client.delete(
+            reverse('clipboard_images', kwargs={'pk': 1})
+        )
+
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.content)
+
+        self.assertDictEqual(data, {
+            'error': 'No clipboard found matching the query'
         })
