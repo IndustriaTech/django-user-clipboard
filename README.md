@@ -26,10 +26,10 @@ Add the urls in your main urls.py file:
 
     url(r'^clipboard/', include('user_clipboard.urls')),
 
-Add these in settings for formating the thumbnail:
+You can configure defaut values with theese settings:
 
 	CLIPBOARD_IMAGE_WIDTH = 100
 	CLIPBOARD_IMAGE_HEIGHT = 100
-	CLIPBOARD_THUMBNAIL_QUALITY = 100
+	CLIPBOARD_THUMBNAIL_QUALITY = 80
 
 Run migrations or syncdb depending on whether you use South.
