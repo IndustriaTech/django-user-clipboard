@@ -19,8 +19,8 @@ setup(
         'user_clipboard.migrations',
         'user_clipboard.utils',
     ],
-    package_data={'': ['license.txt'],
-                  'tests_file': ['tests_files/*']
+    package_data={
+        '': ['LICENSE', 'README.md']
     },
     include_package_data=True,
     keywords=['Clipboard', 'Clipboard API', 'File Clipboard', 'Image Clipboard'],
