@@ -2,13 +2,16 @@ import os
 import shutil
 import json
 from io import BytesIO
+from datetime import timedelta
 from PIL import Image
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.core.files.base import ContentFile, File
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.utils import timezone
 
 from .models import Clipboard
 
@@ -502,3 +505,19 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(404, response.status_code)
+
+    def test_delete_expired(self):
+        active = Clipboard.objects.create(
+            file=ContentFile('Active File', name='active.txt'),
+            user=self.user1,
+        )
+        expired = Clipboard.objects.create(
+            file=ContentFile('Expired File', name='expired.txt'),
+            user=self.user1,
+            date_created=timezone.now() - timedelta(days=30)
+        )
+
+        call_command('clear_clipboard')
+
+        self.assertTrue(Clipboard.objects.filter(pk=active.pk).exists())
+        self.assertFalse(Clipboard.objects.filter(pk=expired.pk).exists())

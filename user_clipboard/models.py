@@ -1,10 +1,15 @@
 import uuid
 
 from PIL import Image
+from datetime import timedelta
 
-from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch.dispatcher import receiver
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
+
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
 
@@ -25,16 +30,28 @@ def new_file_upload_to(instance, filename):
     }
 
 
+class ClipboardManager(models.Manager):
+    def expired(self):
+        return self.filter(date_created__lt=timezone.now() - timedelta(hours=1))
+
+
 class Clipboard(models.Model):
     user = models.ForeignKey(User)
     file = models.FileField(upload_to=new_file_upload_to, max_length=255)
     filename = models.CharField(max_length=128, null=True, blank=True)
     is_image = models.BooleanField(editable=False, default=False)
+    date_created = models.DateTimeField(editable=False, default=timezone.now)
 
     image_thumbnail = ImageSpecField(source='file',
                                      processors=[ResizeToFill(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)],
                                      format='JPEG',
                                      options={'quality': THUMBNAIL_QUALITY})
+
+    objects = ClipboardManager()
+
+    class Meta:
+        verbose_name = 'Clipboard Item'
+        verbose_name_plural = 'Clipboard'
 
     def __unicode__(self):
         return self.filename
@@ -58,3 +75,11 @@ class Clipboard(models.Model):
     def get_thumbnail_url(self):
         if self.is_image and self.file:
             return self.image_thumbnail.url
+
+
+@receiver(post_delete, sender=Clipboard)
+def _handle_deleteing(sender, instance, **kwargs):
+    """
+    Delete file when Clipboard item was deleted
+    """
+    instance.file.delete(save=False)
