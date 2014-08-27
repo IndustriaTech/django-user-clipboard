@@ -76,6 +76,11 @@ class Clipboard(models.Model):
         if self.is_image and self.file:
             return self.image_thumbnail.url
 
+    @property
+    def thumbnail(self):
+        if self.is_image:
+            return self.image_thumbnail
+
 
 @receiver(post_delete, sender=Clipboard)
 def _handle_deleteing(sender, instance, **kwargs):
