@@ -2,16 +2,15 @@
 
 This app returns to user JSONs from uploaded file/image.
 
-This app is **IS** connected with django user model.
+This app is connected with django user model.
 
-This app needs:
-	- django-imagekit
+This app needs `django-imagekit`
 
 ## SetUp
 
 Install the app:
 
-    pip install ....
+    pip install git+https://github.com/MagicSolutions/django-user-clipboard.git
 
 You should have these in installed apps:
 
