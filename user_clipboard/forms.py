@@ -8,11 +8,13 @@ class ClipboardFileForm(forms.ModelForm):
         model = Clipboard
         fields = ('file',)
 
+    def save(self, commit=True):
+        # Delete old file before saving the new one
+        if self.instance.pk:
+            old_instance = self._meta.model.objects.get(pk=self.instance.pk)
+            old_instance.file.delete(save=False)
+        return super(ClipboardFileForm, self).save(commit=commit)
 
-class ClipboardImageForm(forms.ModelForm):
 
+class ClipboardImageForm(ClipboardFileForm):
     file = forms.ImageField()
-
-    class Meta:
-        model = Clipboard
-        fields = ('file',)
