@@ -34,7 +34,10 @@ class ClipboardTestMixin(object):
         self.fake_clipboard_image2 = Clipboard.objects.create(user=self.user1, file=File(test_image, 'test_image2.png'))
 
     def tearDown(self):
-        shutil.rmtree(settings.MEDIA_ROOT)
+        shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'clipboard'))
+        cache_dir = os.path.join(settings.MEDIA_ROOT, 'CACHE')
+        if os.path.isdir(cache_dir):
+            shutil.rmtree(cache_dir)
 
 
 class ClipboardTestApi(ClipboardTestMixin, TestCase):
