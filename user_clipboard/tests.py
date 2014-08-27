@@ -15,8 +15,6 @@ from django.utils import timezone
 
 from .models import Clipboard
 
-REQUEST_CONTENT = 'application/x-www-form-urlencoded'
-
 
 class ClipboardTestMixin(object):
 
@@ -221,7 +219,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         data = json.loads(response.content)
 
-        url_path = data['data']['url']
         clipboard_file = Clipboard.objects.get(pk=5)
         self.assertEqual(200, response.status_code)
         self.assertDictEqual(data, {
@@ -231,12 +228,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'id': clipboard_file.pk,
             }
         })
-
-        if os.path.exists(settings.PROJECT_DIR + url_path):
-            try:
-                os.remove(settings.PROJECT_DIR + url_path)
-            except OSError as e:
-                print e
 
     def test_file_clipboard_create_image_file(self):
         self.client.login(username="user1", password=1234)
@@ -252,8 +243,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         data = json.loads(response.content)
 
-        url_path = data['data']['url']
-        url_path_thumbnail = data['data']['thumbnail']
         clipboard_file = Clipboard.objects.get(pk=5)
 
         self.assertEqual(200, response.status_code)
@@ -265,14 +254,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'thumbnail': clipboard_file.get_thumbnail_url(),
             }
         })
-
-        if os.path.exists(settings.PROJECT_DIR + url_path):
-            try:
-                os.remove(settings.PROJECT_DIR + url_path)
-                shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
-                # os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir))
-            except OSError as e:
-                print e
 
     def test_image_clipboard_create_non_image_file(self):
         self.client.login(username="user1", password=1234)
@@ -343,8 +324,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         data = json.loads(response.content)
 
-        url_path = data['data']['url']
-        url_path_thumbnail = data['data']['thumbnail']
         file_for_edit = Clipboard.objects.get(pk=1)
 
         self.assertDictEqual(data, {
@@ -355,13 +334,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'name': file_for_edit.filename
             }
         })
-
-        if os.path.exists(settings.PROJECT_DIR + url_path):
-            try:
-                os.remove(settings.PROJECT_DIR + url_path)
-                shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
-            except OSError as e:
-                print e
 
     def test_image_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
@@ -405,8 +377,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(200, response.status_code)
 
         data = json.loads(response.content)
-        url_path = data['data']['url']
-        url_path_thumbnail = data['data']['thumbnail']
         image_for_edit = Clipboard.objects.get(pk=3)
 
         self.assertDictEqual(data, {
@@ -417,13 +387,6 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 'name': image_for_edit.filename,
             }
         })
-
-        if os.path.exists(settings.PROJECT_DIR + url_path):
-            try:
-                os.remove(settings.PROJECT_DIR + url_path)
-                shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
-            except OSError as e:
-                print e
 
     def test_clear_clipboard(self):
         self.client.login(username="user1", password=1234)
