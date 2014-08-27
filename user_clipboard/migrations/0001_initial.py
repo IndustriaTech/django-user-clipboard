@@ -12,10 +12,10 @@ class Migration(SchemaMigration):
         db.create_table(u'user_clipboard_clipboard', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('file', self.gf('django.db.models.fields.files.FileField')(max_length=255)),
-            ('filename', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
-            ('is_image', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('date_created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('file', self.gf('django.db.models.fields.files.FileField')(max_length=128)),
+            ('filename', self.gf('django.db.models.fields.CharField')(default='', max_length=256)),
+            ('is_image', self.gf('django.db.models.fields.BooleanField')(default=False, db_index=True)),
+            ('date_created', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, db_index=True)),
         ))
         db.send_create_signal(u'user_clipboard', ['Clipboard'])
 
@@ -64,11 +64,11 @@ class Migration(SchemaMigration):
         },
         u'user_clipboard.clipboard': {
             'Meta': {'object_name': 'Clipboard'},
-            'date_created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'file': ('django.db.models.fields.files.FileField', [], {'max_length': '255'}),
-            'filename': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
+            'date_created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'db_index': 'True'}),
+            'file': ('django.db.models.fields.files.FileField', [], {'max_length': '128'}),
+            'filename': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '256'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_image': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_image': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_index': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
         }
     }

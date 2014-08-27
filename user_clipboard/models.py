@@ -37,10 +37,10 @@ class ClipboardManager(models.Manager):
 
 class Clipboard(models.Model):
     user = models.ForeignKey(User)
-    file = models.FileField(upload_to=new_file_upload_to, max_length=255)
-    filename = models.CharField(max_length=128, null=True, blank=True)
-    is_image = models.BooleanField(editable=False, default=False)
-    date_created = models.DateTimeField(editable=False, default=timezone.now)
+    file = models.FileField(upload_to=new_file_upload_to, max_length=128)
+    filename = models.CharField(max_length=256, editable=False, default='')
+    is_image = models.BooleanField(editable=False, default=False, db_index=True)
+    date_created = models.DateTimeField(editable=False, default=timezone.now, db_index=True)
 
     image_thumbnail = ImageSpecField(source='file',
                                      processors=[ResizeToFill(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)],
