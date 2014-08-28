@@ -87,4 +87,5 @@ def _handle_deleteing(sender, instance, **kwargs):
     """
     Delete file when Clipboard item was deleted
     """
-    instance.file.delete(save=False)
+    if instance.file:
+        instance.file.delete(save=False)
