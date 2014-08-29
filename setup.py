@@ -6,7 +6,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 setup(
     name='django-user-clipboard',
     url='https://github.com/MagicSolutions/django-user-clipboard',
-    version='0.1',
+    version='0.1.1',
     description='Clipboard API',
     author='Vladimir Rusinov',
     author_email='vladimirrussinov@gmail.com',
