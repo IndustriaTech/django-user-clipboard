@@ -19,6 +19,7 @@ setup(
         'user_clipboard.management',
         'user_clipboard.management.commands',
         'user_clipboard.migrations',
+        'user_clipboard.south_migrations',
         'user_clipboard.utils',
     ],
     package_data={
