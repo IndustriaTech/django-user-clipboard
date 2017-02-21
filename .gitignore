@@ -1,5 +1,6 @@
 *.pyc
 *.sublime-*
+/tags
 /media*
 /example/example/media*
 *.egg-info
