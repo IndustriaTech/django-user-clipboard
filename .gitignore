@@ -2,4 +2,5 @@
 *.sublime-*
 /media*
 /example/example/media*
+*.egg-info
 *.sqlite3
