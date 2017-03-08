@@ -13,7 +13,7 @@ SetUp
 Install the app:
 ::
 
-    pip install git+https://github.com/MagicSolutions/django-user-clipboard.git
+    pip install git+https://github.com/IndustriaTech/django-user-clipboard.git
 
 You should have these in installed apps:
 ::
