@@ -30,6 +30,7 @@ setup(
     },
     include_package_data=True,
     keywords=['Clipboard', 'Clipboard API', 'File Clipboard', 'Image Clipboard'],
+    license='The MIT License (MIT)',
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
