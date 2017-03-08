@@ -36,7 +36,7 @@ class ClipboardManager(models.Manager):
 
 
 class Clipboard(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     file = models.FileField(upload_to=new_file_upload_to, max_length=128)
     filename = models.CharField(max_length=256, editable=False, default='')
     is_image = models.BooleanField(editable=False, default=False, db_index=True)
