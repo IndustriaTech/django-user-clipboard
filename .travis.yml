@@ -1,0 +1,21 @@
+language: python
+
+sudo: false
+
+install:
+  - pip install tox
+
+script:
+  - tox
+
+matrix:
+  fast_finish: true
+  include:
+    - env: TOXENV=py27-dj18
+      python: 2.7
+    - env: TOXENV=py27-dj19
+      python: 2.7
+    - env: TOXENV=py27-dj110
+      python: 2.7
+    - env: TOXENV=py27-dj111
+      python: 2.7
