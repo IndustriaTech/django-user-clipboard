@@ -5,14 +5,15 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
 setup(
     name='django-user-clipboard',
-    url='https://github.com/MagicSolutions/django-user-clipboard',
     version='0.2.0',
+    url='https://github.com/IndustriaTech/django-user-clipboard',
     description='Clipboard API',
     author='Vladimir Rusinov',
     author_email='vladimirrussinov@gmail.com',
     long_description=README,
     install_requires=[
-        'django-imagekit'
+        'Pillow',
+        'django-imagekit',
     ],
     packages=[
         'user_clipboard',

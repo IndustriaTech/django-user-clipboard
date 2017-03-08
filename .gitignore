@@ -1,7 +1,9 @@
 *.pyc
 *.sublime-*
+.tox
 /tags
 /media*
+/test_project/media*
 /example/example/media*
 *.egg-info
 *.sqlite3
