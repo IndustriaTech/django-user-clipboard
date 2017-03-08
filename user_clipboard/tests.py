@@ -1,6 +1,5 @@
 import os
 import shutil
-import json
 from io import BytesIO
 from datetime import timedelta
 from PIL import Image
@@ -12,6 +11,7 @@ from django.core.files.base import ContentFile, File
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils import timezone
+from django.utils.encoding import force_str
 
 from .models import Clipboard
 
@@ -123,9 +123,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard')
         )
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'data': [{
                 'url': clipboard_file.file.url,
                 'name': clipboard_file.filename,
@@ -156,9 +154,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'data': {
                 'url': clipboard_file.file.url,
                 'name': clipboard_file.filename,
@@ -176,9 +172,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'data': [{
                 'url': clipboard_image.file.url,
                 'name': clipboard_image.filename,
@@ -201,9 +195,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'data': {
                 'url': clipboard_image.file.url,
                 'name': clipboard_image.filename,
@@ -220,11 +212,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             {'file': ContentFile('test file', name='test_file.txt')}
         )
 
-        data = json.loads(response.content)
-
         clipboard_file = Clipboard.objects.get(pk=5)
+
         self.assertEqual(200, response.status_code)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'data': {
                 'url': clipboard_file.file.url,
                 'name': clipboard_file.filename,
@@ -244,12 +235,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard'), {'file': test_image}
         )
 
-        data = json.loads(response.content)
-
         clipboard_file = Clipboard.objects.get(pk=5)
 
         self.assertEqual(200, response.status_code)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'data': {
                 'url': clipboard_file.file.url,
                 'name': clipboard_file.filename,
@@ -267,10 +256,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'errors': {
                 'file': ['Upload a valid image. The file you uploaded was either not an image or a corrupted image.']
             }
@@ -288,19 +274,17 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard_images'), {'file': test_image}
         )
 
-        data = json.loads(response.content)
-
-        url_path = data['data']['url']
-        url_path_thumbnail = data['data']['thumbnail']
         clipboard_file = Clipboard.objects.get(pk=5)
+        url_path = clipboard_file.file.url
+        url_path_thumbnail = clipboard_file.get_thumbnail_url()
 
         self.assertEqual(200, response.status_code)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'data': {
-                'url': clipboard_file.file.url,
+                'url': url_path,
                 'name': clipboard_file.filename,
                 'id': clipboard_file.pk,
-                'thumbnail': clipboard_file.get_thumbnail_url(),
+                'thumbnail': url_path_thumbnail,
             }
         })
 
@@ -309,7 +293,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
                 os.remove(settings.PROJECT_DIR + url_path)
                 shutil.rmtree(os.path.abspath(os.path.join(settings.PROJECT_DIR + url_path_thumbnail, os.pardir)))
             except OSError as e:
-                print e
+                print(e)
 
     def test_file_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
@@ -323,13 +307,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             {'file': test_image}
         )
 
-        self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-
         file_for_edit = Clipboard.objects.get(pk=1)
 
-        self.assertDictEqual(data, {
+        self.assertEqual(200, response.status_code)
+        self.assertJSONEqual(force_str(response.content), {
             'data': {
                 'url': file_for_edit.file.url,
                 'id': file_for_edit.pk,
@@ -347,9 +328,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)
-
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'errors': {
                 'file': ['Upload a valid image. The file you uploaded was either not an image or a corrupted image.']
             }
@@ -377,12 +356,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             {'file': test_image}
         )
 
-        self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
         image_for_edit = Clipboard.objects.get(pk=3)
 
-        self.assertDictEqual(data, {
+        self.assertEqual(200, response.status_code)
+        self.assertJSONEqual(force_str(response.content), {
             'data': {
                 'url': image_for_edit.file.url,
                 'id': image_for_edit.pk,
@@ -399,10 +376,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard')
         )
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'success': True
         })
         self.assertFalse(Clipboard.objects.filter(user__username='user1').exists())
@@ -414,10 +388,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'success': True
         })
 
@@ -428,8 +399,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard_images')
         )
         self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'success': True
         })
         self.assertFalse(Clipboard.objects.filter(user__username='user1', is_image=True).exists())
@@ -441,10 +411,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         )
 
         self.assertEqual(200, response.status_code)
-
-        data = json.loads(response.content)
-
-        self.assertDictEqual(data, {
+        self.assertJSONEqual(force_str(response.content), {
             'success': True
         })
 
