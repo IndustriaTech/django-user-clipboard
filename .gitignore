@@ -1,5 +1,6 @@
 *.pyc
 *.sublime-*
+.tox
 /tags
 /media*
 /example/example/media*
