@@ -1,18 +1,22 @@
-# Django User Clipboard
+Django User Clipboard
+=====================
 
 This app returns to user JSONs from uploaded file/image.
 
 This app is connected with django user model.
 
-This app needs `django-imagekit`
+This app needs :code:`django-imagekit`
 
-## SetUp
+SetUp
+-----
 
 Install the app:
+::
 
     pip install git+https://github.com/MagicSolutions/django-user-clipboard.git
 
 You should have these in installed apps:
+::
 
     INSTALLED_APPS = (
         ....
@@ -21,14 +25,19 @@ You should have these in installed apps:
     	'user_clipboard',
     )
 
-Add the urls in your main urls.py file:
+Add the urls in your main :code:`urls.py` file:
+::
 
     url(r'^clipboard/', include('user_clipboard.urls')),
 
 You can configure defaut values with theese settings:
+::
 
 	CLIPBOARD_IMAGE_WIDTH = 100
 	CLIPBOARD_IMAGE_HEIGHT = 100
 	CLIPBOARD_THUMBNAIL_QUALITY = 80
 
-Run migrations or syncdb depending on whether you use South.
+And finally you can run the migrations:
+::
+
+    python manage.py migrate
