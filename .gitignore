@@ -1,6 +1,7 @@
 *.pyc
 *.sublime-*
 .tox
+/dist
 /tags
 /media*
 /test_project/media*
