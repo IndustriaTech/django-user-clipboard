@@ -24,8 +24,6 @@ SECRET_KEY = '*5d176o8z7)2lmn9c_244x%ylpw^k^kyj@$da#b@%7)j&0sd10'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
@@ -90,7 +88,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(PROJECT_DIR, "media/")
+MEDIA_ROOT = os.path.join(PROJECT_DIR, "media", "")
 MEDIA_URL = "/media/"
 
 CLIPBOARD_IMAGE_WIDTH = 100
@@ -100,3 +98,24 @@ CLIPBOARD_THUMBNAIL_QUALITY = 100
 SOUTH_AUTO_FREEZE_APP = True
 SOUTH_TESTS_MIGRATE = False
 SKIP_SOUTH_TESTS = True
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'DIRS': [
+            os.path.join(PROJECT_DIR, "templates"),
+        ],
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]

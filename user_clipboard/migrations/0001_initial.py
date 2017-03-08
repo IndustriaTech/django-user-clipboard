@@ -2,9 +2,9 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+from django.conf import settings
 import django.utils.timezone
 import user_clipboard.models
-from django.conf import settings
 
 
 class Migration(migrations.Migration):
@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('filename', models.CharField(default=b'', max_length=256, editable=False)),
                 ('is_image', models.BooleanField(default=False, db_index=True, editable=False)),
                 ('date_created', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Clipboard Item',
