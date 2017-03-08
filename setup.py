@@ -10,6 +10,8 @@ setup(
     description='Clipboard API',
     author='Vladimir Rusinov',
     author_email='vladimirrussinov@gmail.com',
+    maintainer='Venelin Stoykov',
+    maintainer_email='venelin.stoykov@industria.tech',
     long_description=README,
     install_requires=[
         'Pillow',
