@@ -1,7 +1,7 @@
 from setuptools import setup
 import os
 
-README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
+README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
 setup(
     name='django-user-clipboard',
@@ -24,7 +24,7 @@ setup(
         'user_clipboard.utils',
     ],
     package_data={
-        '': ['LICENSE', 'README.md']
+        '': ['LICENSE', 'README.rst']
     },
     include_package_data=True,
     keywords=['Clipboard', 'Clipboard API', 'File Clipboard', 'Image Clipboard'],
