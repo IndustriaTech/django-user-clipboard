@@ -37,9 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'test_project',
     'imagekit',
     'user_clipboard',
+
+    # Models and templates for the tests
+    'user_clipboard.tests',
 ]
 
 if django.VERSION < (1, 7):
@@ -54,9 +56,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'test_project.urls'
+ROOT_URLCONF = 'user_clipboard.tests.urls'
 
-WSGI_APPLICATION = 'test_project.wsgi.application'
+WSGI_APPLICATION = 'user_clipboard.tests.wsgi.application'
 
 
 # Database

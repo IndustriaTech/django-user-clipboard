@@ -10,10 +10,12 @@ from django.core.management import call_command
 from django.core.files.base import ContentFile, File
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils import timezone
 from django.utils.encoding import force_str
 
-from .models import Clipboard
+from user_clipboard.models import Clipboard
+from user_clipboard.tests.models import ModelWithFile, ModelWithImage
 
 
 class ClipboardTestMixin(object):
@@ -454,3 +456,56 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
         self.assertTrue(Clipboard.objects.filter(pk=active.pk).exists())
         self.assertFalse(Clipboard.objects.filter(pk=expired.pk).exists())
+
+
+@override_settings(ROOT_URLCONF='user_clipboard.tests.urls')
+class ClipboardUsageTest(ClipboardTestMixin, TestCase):
+
+    def tearDown(self):
+        super(ClipboardUsageTest, self).tearDown()
+        try:
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'documents'))
+        except OSError:
+            pass
+        try:
+            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'images'))
+        except OSError:
+            pass
+
+    def test_use_clipboard_file(self):
+        self.client.login(username='user1', password='1234')
+
+        response = self.client.post(
+            reverse('test_user_clipboard_upload_document'),
+            data={
+                'document': self.fake_clipboard_file.pk,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
+        instance = ModelWithFile.objects.latest('pk')
+        self.assertJSONEqual(force_str(response.content), {
+            'data': {
+                'pk': instance.pk,
+                'document': '/media/documents/test_file.txt',
+            }
+        })
+
+    def test_use_clipboard_image(self):
+        self.client.login(username='user1', password='1234')
+
+        response = self.client.post(
+            reverse('test_user_clipboard_upload_image'),
+            data={
+                'image': self.fake_clipboard_image.pk,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
+        instance = ModelWithImage.objects.latest('pk')
+        self.assertJSONEqual(force_str(response.content), {
+            'data': {
+                'pk': instance.pk,
+                'image': '/media/images/test_image.png',
+            }
+        })

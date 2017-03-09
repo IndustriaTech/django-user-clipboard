@@ -6,5 +6,6 @@
 /media*
 /test_project/media*
 /example/example/media*
+/user_cliboard/tests/media*
 *.egg-info
 *.sqlite3
