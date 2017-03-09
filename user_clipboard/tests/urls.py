@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('user_clipboard.urls')),
     url(r'^$', TemplateView.as_view(template_name='index.html'), {'file_form': ClipboardFileForm(),
-                                                                'image_form': ClipboardImageForm()}),
+                                                                  'image_form': ClipboardImageForm()}),
 ]
 
 if settings.DEBUG:

@@ -13,7 +13,7 @@ from django.test import TestCase
 from django.utils import timezone
 from django.utils.encoding import force_str
 
-from .models import Clipboard
+from user_clipboard.models import Clipboard
 
 
 class ClipboardTestMixin(object):
