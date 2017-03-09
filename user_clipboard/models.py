@@ -8,6 +8,8 @@ from django.db.models.signals import post_delete
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files import File
+from django.core.files.images import ImageFile
 from django.utils import timezone
 
 from imagekit.models import ImageSpecField
@@ -80,6 +82,21 @@ class Clipboard(models.Model):
     def thumbnail(self):
         if self.is_image:
             return self.image_thumbnail
+
+    def get_file(self):
+        """
+        Method that returns File object ready to be assigned to FileField.
+        It replaces UploadedFile.
+        """
+        return File(self.file, self.filename)
+
+    def get_image(self):
+        """
+        Method that returns ImageFile object ready to be assigned to ImageField.
+        It replaces UploadedFile.
+        """
+        if self.is_image:
+            return ImageFile(self.file, self.filename)
 
 
 @receiver(post_delete, sender=Clipboard)
