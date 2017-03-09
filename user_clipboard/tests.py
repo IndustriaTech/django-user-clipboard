@@ -50,7 +50,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(403, response.status_code)
 
         response = self.client.get(
-            reverse('clipboard', kwargs={'pk': 1})
+            reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(403, response.status_code)
@@ -61,7 +61,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(403, response.status_code)
 
         response = self.client.get(
-            reverse('clipboard_images', kwargs={'pk': 1})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(403, response.status_code)
@@ -73,7 +73,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(403, response.status_code)
 
         response = self.client.post(
-            reverse('clipboard', kwargs={'pk': 1})
+            reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(403, response.status_code)
@@ -84,7 +84,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(403, response.status_code)
 
         response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 1})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(403, response.status_code)
@@ -96,7 +96,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(403, response.status_code)
 
         response = self.client.delete(
-            reverse('clipboard', kwargs={'pk': 1})
+            reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(403, response.status_code)
@@ -107,17 +107,17 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(403, response.status_code)
 
         response = self.client.delete(
-            reverse('clipboard_images', kwargs={'pk': 1})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(403, response.status_code)
 
     def test_user1_get_clipboard(self):
         self.client.login(username="user1", password=1234)
-        clipboard_file = Clipboard.objects.get(user=self.user1, pk=1)
-        clipboard_file2 = Clipboard.objects.get(user=self.user1, pk=2)
-        clipboard_image = Clipboard.objects.get(user=self.user1, pk=3)
-        clipboard_image2 = Clipboard.objects.get(user=self.user1, pk=4)
+        clipboard_file = self.fake_clipboard_file
+        clipboard_file2 = self.fake_clipboard_file2
+        clipboard_image = self.fake_clipboard_image
+        clipboard_image2 = self.fake_clipboard_image2
 
         response = self.client.get(
             reverse('clipboard')
@@ -147,10 +147,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_user1_get_clipboard_kwargs(self):
         self.client.login(username="user1", password=1234)
-        clipboard_file = Clipboard.objects.get(user=self.user1, pk=1)
+        clipboard_file = self.fake_clipboard_file
 
         response = self.client.get(
-            reverse('clipboard', kwargs={'pk': 1})
+            reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(200, response.status_code)
@@ -164,8 +164,8 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_user1_get_clipboard_images(self):
         self.client.login(username="user1", password=1234)
-        clipboard_image = Clipboard.objects.get(user=self.user1, pk=3)
-        clipboard_image2 = Clipboard.objects.get(user=self.user1, pk=4)
+        clipboard_image = self.fake_clipboard_image
+        clipboard_image2 = self.fake_clipboard_image2
 
         response = self.client.get(
             reverse('clipboard_images')
@@ -188,10 +188,10 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_user1_get_clipboard_images_kwargs(self):
         self.client.login(username="user1", password=1234)
-        clipboard_image = Clipboard.objects.get(user=self.user1, pk=3)
+        clipboard_image = self.fake_clipboard_image
 
         response = self.client.get(
-            reverse('clipboard_images', kwargs={'pk': 3})
+            reverse('clipboard_images', kwargs={'pk': clipboard_image.pk})
         )
 
         self.assertEqual(200, response.status_code)
@@ -212,7 +212,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             {'file': ContentFile('test file', name='test_file.txt')}
         )
 
-        clipboard_file = Clipboard.objects.get(pk=5)
+        clipboard_file = Clipboard.objects.latest('pk')
 
         self.assertEqual(200, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
@@ -235,7 +235,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard'), {'file': test_image}
         )
 
-        clipboard_file = Clipboard.objects.get(pk=5)
+        clipboard_file = Clipboard.objects.latest('pk')
 
         self.assertEqual(200, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
@@ -274,7 +274,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             reverse('clipboard_images'), {'file': test_image}
         )
 
-        clipboard_file = Clipboard.objects.get(pk=5)
+        clipboard_file = Clipboard.objects.latest('pk')
         url_path = clipboard_file.file.url
         url_path_thumbnail = clipboard_file.get_thumbnail_url()
 
@@ -303,11 +303,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         test_image.name = 'test_image.png'
 
         response = self.client.post(
-            reverse('clipboard', kwargs={'pk': 1}),
+            reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk}),
             {'file': test_image}
         )
 
-        file_for_edit = Clipboard.objects.get(pk=1)
+        file_for_edit = Clipboard.objects.get(pk=self.fake_clipboard_file.pk)
 
         self.assertEqual(200, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
@@ -323,7 +323,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.client.login(username="user1", password=1234)
 
         response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 3}),
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk}),
             {'file': ContentFile('test file', name='test_file.txt')}
         )
 
@@ -337,7 +337,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_404_image_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
         response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 1}),
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk}),
             {'file': ContentFile('test file', name='test_file.txt')}
         )
 
@@ -352,11 +352,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         test_image.name = 'test_image.png'
 
         response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': 3}),
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk}),
             {'file': test_image}
         )
 
-        image_for_edit = Clipboard.objects.get(pk=3)
+        image_for_edit = Clipboard.objects.get(pk=self.fake_clipboard_image.pk)
 
         self.assertEqual(200, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
@@ -384,7 +384,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_delete_file_with_pk(self):
         self.client.login(username="user1", password=1234)
         response = self.client.delete(
-            reverse('clipboard', kwargs={'pk': 1})
+            reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(200, response.status_code)
@@ -407,7 +407,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_delete_image_with_pk(self):
         self.client.login(username="user1", password=1234)
         response = self.client.delete(
-            reverse('clipboard_images', kwargs={'pk': 3})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk})
         )
 
         self.assertEqual(200, response.status_code)
@@ -418,11 +418,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_delete_404_image_with_pk(self):
         self.client.login(username="user1", password=1234)
         response = self.client.delete(
-            reverse('clipboard_images', kwargs={'pk': 3})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk})
         )
 
         response = self.client.delete(
-            reverse('clipboard_images', kwargs={'pk': 3})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk})
         )
 
         self.assertEqual(404, response.status_code)
@@ -430,11 +430,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_delete_404_file_with_pk(self):
         self.client.login(username="user1", password=1234)
         response = self.client.delete(
-            reverse('clipboard_images', kwargs={'pk': 1})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         response = self.client.delete(
-            reverse('clipboard_images', kwargs={'pk': 1})
+            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk})
         )
 
         self.assertEqual(404, response.status_code)
