@@ -43,7 +43,7 @@ class ClipboardFileAPIView(SingleObjectMixin, View):
                 'data': self.file_as_dict(instance)
             })
 
-        return JSONResponse(request, {'errors': form.errors})
+        return JSONResponse(request, {'errors': form.errors}, status=400)
 
     def delete(self, request, pk=None):
         if not request.user.is_authenticated():
