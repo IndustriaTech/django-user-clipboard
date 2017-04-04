@@ -257,7 +257,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             {'file': ContentFile('test file', name='test_file.txt')}
         )
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
             'errors': {
                 'file': ['Upload a valid image. The file you uploaded was either not an image or a corrupted image.']
@@ -329,7 +329,7 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
             {'file': ContentFile('test file', name='test_file.txt')}
         )
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
             'errors': {
                 'file': ['Upload a valid image. The file you uploaded was either not an image or a corrupted image.']
