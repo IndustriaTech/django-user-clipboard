@@ -1,6 +1,7 @@
 *.pyc
 *.sublime-*
 .tox
+.vscode
 /dist
 /tags
 /media*
