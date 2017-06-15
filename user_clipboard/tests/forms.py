@@ -20,7 +20,7 @@ class ModelWithFileForm(forms.ModelForm):
         if clipboard_pk:
             try:
                 item = Clipboard.objects.get(pk=clipboard_pk, user=self.user)
-                return item.get_file()
+                return item.uploaded_file
             except Clipboard.DoesNotExist:
                 raise forms.ValidationError('Error processing document. Please upload it again.')
         return None
@@ -43,7 +43,7 @@ class ModelWithImageForm(forms.ModelForm):
         if clipboard_pk:
             try:
                 item = Clipboard.objects.get(pk=clipboard_pk, user=self.user)
-                return item.get_image()
+                return item.uploaded_image
             except Clipboard.DoesNotExist:
                 raise forms.ValidationError('Error processing image. Please upload it again.')
         return None

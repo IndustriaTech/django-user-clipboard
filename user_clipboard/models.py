@@ -8,12 +8,13 @@ from django.db.models.signals import post_delete
 from django.dispatch.dispatcher import receiver
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.files import File
-from django.core.files.images import ImageFile
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill
+
+from .files import ClipboardFile, ClipboardImageFile
 
 THUMBNAIL_WIDTH = getattr(settings, 'CLIPBOARD_IMAGE_WIDTH', 100)
 THUMBNAIL_HEIGHT = getattr(settings, 'CLIPBOARD_IMAGE_HEIGHT', 100)
@@ -83,12 +84,20 @@ class Clipboard(models.Model):
         if self.is_image:
             return self.image_thumbnail
 
+    @cached_property
+    def uploaded_file(self):
+        return self.get_file()
+
+    @cached_property
+    def uploaded_image(self):
+        return self.get_image()
+
     def get_file(self):
         """
         Method that returns File object ready to be assigned to FileField.
         It replaces UploadedFile.
         """
-        return File(self.file, self.filename)
+        return ClipboardFile(self.file, self.filename)
 
     def get_image(self):
         """
@@ -96,7 +105,7 @@ class Clipboard(models.Model):
         It replaces UploadedFile.
         """
         if self.is_image:
-            return ImageFile(self.file, self.filename)
+            return ClipboardImageFile(self.file, self.filename)
 
 
 @receiver(post_delete, sender=Clipboard)
