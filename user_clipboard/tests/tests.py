@@ -25,15 +25,18 @@ class ClipboardTestMixin(object):
         self.user1.set_password('1234')
         self.user1.save()
 
-        self.fake_clipboard_file = Clipboard.objects.create(user=self.user1, file=ContentFile('test file', 'test_file.txt'))
-        self.fake_clipboard_file2 = Clipboard.objects.create(user=self.user1, file=ContentFile('test file 2', 'test_file2.txt'))
+        with ContentFile('test file', 'test_file.txt') as test_file:
+            self.fake_clipboard_file = Clipboard.objects.create(user=self.user1, file=test_file)
 
-        test_image = BytesIO()
-        Image.new("RGBA", size=(50, 50), color=(256, 0, 0)).save(test_image, 'png')
-        test_image.seek(0)
-        self.fake_clipboard_image = Clipboard.objects.create(user=self.user1, file=File(test_image, 'test_image.png'))
-        test_image.seek(0)
-        self.fake_clipboard_image2 = Clipboard.objects.create(user=self.user1, file=File(test_image, 'test_image2.png'))
+        with ContentFile('test file 2', 'test_file2.txt') as test_file2:
+            self.fake_clipboard_file2 = Clipboard.objects.create(user=self.user1, file=test_file2)
+
+        with BytesIO() as test_image:
+            Image.new("RGBA", size=(50, 50), color=(256, 0, 0)).save(test_image, 'png')
+            test_image.seek(0)
+            self.fake_clipboard_image = Clipboard.objects.create(user=self.user1, file=File(test_image, 'test_image.png'))
+            test_image.seek(0)
+            self.fake_clipboard_image2 = Clipboard.objects.create(user=self.user1, file=File(test_image, 'test_image2.png'))
 
     def tearDown(self):
         shutil.rmtree(os.path.join(settings.MEDIA_ROOT, 'clipboard'))
@@ -209,10 +212,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_file_clipboard_create_non_image_file(self):
         self.client.login(username="user1", password=1234)
 
-        response = self.client.post(
-            reverse('clipboard'),
-            {'file': ContentFile('test file', name='test_file.txt')}
-        )
+        with ContentFile('test file', name='test_file.txt') as test_file:
+            response = self.client.post(
+                reverse('clipboard'),
+                {'file': test_file}
+            )
 
         clipboard_file = Clipboard.objects.latest('pk')
 
@@ -228,14 +232,14 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_file_clipboard_create_image_file(self):
         self.client.login(username="user1", password=1234)
 
-        test_image = BytesIO()
-        Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
-        test_image.seek(0)
-        test_image.name = 'test_image.png'
+        with BytesIO() as test_image:
+            Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
+            test_image.seek(0)
+            test_image.name = 'test_image.png'
 
-        response = self.client.post(
-            reverse('clipboard'), {'file': test_image}
-        )
+            response = self.client.post(
+                reverse('clipboard'), {'file': test_image}
+            )
 
         clipboard_file = Clipboard.objects.latest('pk')
 
@@ -252,10 +256,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_image_clipboard_create_non_image_file(self):
         self.client.login(username="user1", password=1234)
 
-        response = self.client.post(
-            reverse('clipboard_images'),
-            {'file': ContentFile('test file', name='test_file.txt')}
-        )
+        with ContentFile('test file', name='test_file.txt') as test_file:
+            response = self.client.post(
+                reverse('clipboard_images'),
+                {'file': test_file}
+            )
 
         self.assertEqual(400, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
@@ -267,14 +272,14 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_image_clipboard_create_image_file(self):
         self.client.login(username="user1", password=1234)
 
-        test_image = BytesIO()
-        Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
-        test_image.seek(0)
-        test_image.name = 'test_image.png'
+        with BytesIO() as test_image:
+            Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
+            test_image.seek(0)
+            test_image.name = 'test_image.png'
 
-        response = self.client.post(
-            reverse('clipboard_images'), {'file': test_image}
-        )
+            response = self.client.post(
+                reverse('clipboard_images'), {'file': test_image}
+            )
 
         clipboard_file = Clipboard.objects.latest('pk')
         url_path = clipboard_file.file.url
@@ -299,15 +304,15 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_file_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
-        test_image = BytesIO()
-        Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
-        test_image.seek(0)
-        test_image.name = 'test_image.png'
+        with BytesIO() as test_image:
+            Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
+            test_image.seek(0)
+            test_image.name = 'test_image.png'
 
-        response = self.client.post(
-            reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk}),
-            {'file': test_image}
-        )
+            response = self.client.post(
+                reverse('clipboard', kwargs={'pk': self.fake_clipboard_file.pk}),
+                {'file': test_image}
+            )
 
         file_for_edit = Clipboard.objects.get(pk=self.fake_clipboard_file.pk)
 
@@ -324,10 +329,11 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
     def test_image_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
 
-        response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk}),
-            {'file': ContentFile('test file', name='test_file.txt')}
-        )
+        with ContentFile('test file', name='test_file.txt') as test_file:
+            response = self.client.post(
+                reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk}),
+                {'file': test_file}
+            )
 
         self.assertEqual(400, response.status_code)
         self.assertJSONEqual(force_str(response.content), {
@@ -338,25 +344,27 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
 
     def test_404_image_clipboard_edit_file(self):
         self.client.login(username="user1", password=1234)
-        response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk}),
-            {'file': ContentFile('test file', name='test_file.txt')}
-        )
+
+        with ContentFile('test file', name='test_file.txt') as test_file:
+            response = self.client.post(
+                reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_file.pk}),
+                {'file': test_file}
+            )
 
         self.assertEqual(404, response.status_code)
 
     def test_image_clipboard_edit_image(self):
         self.client.login(username="user1", password=1234)
 
-        test_image = BytesIO()
-        Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
-        test_image.seek(0)
-        test_image.name = 'test_image.png'
+        with BytesIO() as test_image:
+            Image.new("RGBA", size=(64, 64), color=(256, 128, 64)).save(test_image, 'png')
+            test_image.seek(0)
+            test_image.name = 'test_image.png'
 
-        response = self.client.post(
-            reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk}),
-            {'file': test_image}
-        )
+            response = self.client.post(
+                reverse('clipboard_images', kwargs={'pk': self.fake_clipboard_image.pk}),
+                {'file': test_image}
+            )
 
         image_for_edit = Clipboard.objects.get(pk=self.fake_clipboard_image.pk)
 
@@ -442,15 +450,17 @@ class ClipboardTestApi(ClipboardTestMixin, TestCase):
         self.assertEqual(404, response.status_code)
 
     def test_delete_expired(self):
-        active = Clipboard.objects.create(
-            file=ContentFile('Active File', name='active.txt'),
-            user=self.user1,
-        )
-        expired = Clipboard.objects.create(
-            file=ContentFile('Expired File', name='expired.txt'),
-            user=self.user1,
-            date_created=timezone.now() - timedelta(days=30)
-        )
+        with ContentFile('Active File', name='active.txt') as active_file:
+            active = Clipboard.objects.create(
+                file=active_file,
+                user=self.user1,
+            )
+        with ContentFile('Expired File', name='expired.txt') as expired_file:
+            expired = Clipboard.objects.create(
+                file=expired_file,
+                user=self.user1,
+                date_created=timezone.now() - timedelta(days=30)
+            )
 
         call_command('clear_clipboard')
 
