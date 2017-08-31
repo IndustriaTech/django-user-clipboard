@@ -35,7 +35,8 @@ def new_file_upload_to(instance, filename):
 
 class ClipboardManager(models.Manager):
     def expired(self):
-        return self.filter(date_created__lt=timezone.now() - timedelta(hours=1))
+        expiration_time = getattr(settings, 'CLIPBOARD_EXPIRATION_TIME', 60 * 60)
+        return self.filter(date_created__lt=timezone.now() - timedelta(seconds=expiration_time))
 
 
 class Clipboard(models.Model):
