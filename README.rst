@@ -41,3 +41,21 @@ And finally you can run the migrations:
 ::
 
     python manage.py migrate
+
+In order to clear old objects from the storage you need to periodically clear the storage.
+You can achieve that by executing:
+::
+
+    python manage.py clear_clipboard
+
+By default all files older than one hour are deleted. You can configure the time by setting:
+::
+
+    CLIPBOARD_EXPIRATION_TIME = 60 * 60
+
+Programatically you can delete these in your python code by calling:
+::
+
+    Clipboard.objects.expired().delete()
+
+You need to configre cron or celery or something else to clear the storage periodically.
