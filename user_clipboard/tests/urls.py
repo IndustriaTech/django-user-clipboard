@@ -8,7 +8,7 @@ from .views import upload_document, upload_image
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^api/', include('user_clipboard.urls')),
     url(r'^documents/', upload_document, name='test_user_clipboard_upload_document'),
     url(r'^images/', upload_image, name='test_user_clipboard_upload_image'),

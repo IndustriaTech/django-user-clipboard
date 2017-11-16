@@ -1,9 +1,18 @@
+import django
 from django.core.exceptions import PermissionDenied
 from django.views.generic import View
 from django.views.generic.detail import SingleObjectMixin
 from .utils.ajax import JSONResponse
 from .models import Clipboard
 from .forms import ClipboardFileForm, ClipboardImageForm
+
+
+if django.VERSION < (1, 11):
+    def is_authenticated(user):
+        return user.is_authenticated()
+else:
+    def is_authenticated(user):
+        return user.is_authenticated
 
 
 class ClipboardFileAPIView(SingleObjectMixin, View):
@@ -14,7 +23,7 @@ class ClipboardFileAPIView(SingleObjectMixin, View):
         return super(ClipboardFileAPIView, self).get_queryset().filter(user=self.request.user)
 
     def get(self, request, pk=None):
-        if not request.user.is_authenticated():
+        if not is_authenticated(request.user):
             raise PermissionDenied
 
         if pk is None:
@@ -30,7 +39,7 @@ class ClipboardFileAPIView(SingleObjectMixin, View):
         })
 
     def post(self, request, pk=None):
-        if not request.user.is_authenticated():
+        if not is_authenticated(request.user):
             raise PermissionDenied
 
         instance = self.get_object() if pk is not None else None
@@ -46,7 +55,7 @@ class ClipboardFileAPIView(SingleObjectMixin, View):
         return JSONResponse(request, {'errors': form.errors}, status=400)
 
     def delete(self, request, pk=None):
-        if not request.user.is_authenticated():
+        if not is_authenticated(request.user):
             raise PermissionDenied
         if pk is None:
             # Clear the clipboard
