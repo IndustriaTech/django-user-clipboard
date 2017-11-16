@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 if django.VERSION < (1, 7):
     INSTALLED_APPS.append('south')
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,3 +121,5 @@ TEMPLATES = [
         },
     },
 ]
+
+SILENCED_SYSTEM_CHECKS = ["1_10.W001"]

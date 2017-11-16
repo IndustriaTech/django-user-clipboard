@@ -8,11 +8,14 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.files.base import ContentFile, File
-from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 from django.utils.encoding import force_str
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 from user_clipboard.models import Clipboard
 from user_clipboard.tests.models import ModelWithFile, ModelWithImage
