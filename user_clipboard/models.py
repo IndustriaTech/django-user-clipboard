@@ -78,7 +78,13 @@ class Clipboard(models.Model):
 
     def get_thumbnail_url(self):
         if self.is_image and self.file:
-            return self.image_thumbnail.url
+            # Work around bug in django-imagekit (https://github.com/matthewwithanm/django-imagekit/issues/429)
+            closed = self.file.closed
+            try:
+                return self.image_thumbnail.url
+            finally:
+                if closed:
+                    self.file.close()
 
     @property
     def thumbnail(self):

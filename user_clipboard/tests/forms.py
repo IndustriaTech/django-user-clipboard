@@ -25,6 +25,12 @@ class ModelWithFileForm(forms.ModelForm):
                 raise forms.ValidationError('Error processing document. Please upload it again.')
         return None
 
+    def save(self):
+        try:
+            return super(ModelWithFileForm, self).save()
+        finally:
+            self.cleaned_data['document'].close()
+
 
 class ModelWithImageForm(forms.ModelForm):
 
@@ -47,3 +53,9 @@ class ModelWithImageForm(forms.ModelForm):
             except Clipboard.DoesNotExist:
                 raise forms.ValidationError('Error processing image. Please upload it again.')
         return None
+
+    def save(self):
+        try:
+            return super(ModelWithImageForm, self).save()
+        finally:
+            self.cleaned_data['image'].close()
