@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('file', models.FileField(max_length=128, upload_to=user_clipboard.models.new_file_upload_to)),
-                ('filename', models.CharField(default=b'', max_length=256, editable=False)),
+                ('filename', models.CharField(default='', max_length=256, editable=False)),
                 ('is_image', models.BooleanField(default=False, db_index=True, editable=False)),
                 ('date_created', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
