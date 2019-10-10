@@ -29,6 +29,7 @@ setup(
         '': ['LICENSE', 'README.rst']
     },
     include_package_data=True,
+    zip_safe=False,
     keywords=['Clipboard', 'Clipboard API', 'File Clipboard', 'Image Clipboard'],
     license='The MIT License (MIT)',
     classifiers=[
