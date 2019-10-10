@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst'), 'rt') as readme
 
 setup(
     name='django-user-clipboard',
-    version='0.6.1',
+    version='0.6.2',
     url='https://github.com/IndustriaTech/django-user-clipboard',
     description='Clipboard API',
     author='Vladimir Rusinov',
