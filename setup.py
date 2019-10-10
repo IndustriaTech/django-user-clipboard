@@ -1,7 +1,8 @@
 from setuptools import setup
 import os
 
-README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
+with open(os.path.join(os.path.dirname(__file__), 'README.rst'), 'rt') as readme:
+    README = readme.read()
 
 setup(
     name='django-user-clipboard',
